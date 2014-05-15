@@ -62,323 +62,52 @@ According to the recent reports of individual attacks on enterprise and cloud
  3) Fast ramp-up rate. The attack traffic ramps up quickly and victimize the target cloud service usually within one minute.
 This arises high challenges for attack detection and mitigation in the cloud to meet those requirements.
 
-\subsection{Current approaches and limitations}
-
-
-
-
-
-
-
-
-
-
-
-\parab{Inbound attacks.}
-To detect incoming attacks, cloud operators commonly adopt a
-defense-in-depth approach by deploying (a) commercial hardware boxes
-(e.g., Firewalls, IDS, DDoS-protection appliances) at the network
-level, and (b) proprietary software (e.g., Host-based IDS,
-anti-malware) at the host level.
-%at the border routers. \navendu{ (e.g., syn auth cookie for anti-spoofing?) }
-% Hardware detection is simple, e.g., TCP SYN cookies
-% state-full analysis with memory efficient
-% is good once you know what to look at
-The network boxes analyze inbound traffic to protect against a variety
-of well-known attacks such as TCP SYN, TCP NULL, UDP, and fragment
-misuse.
-%, and then perform stateful analysis with efficient memory usage. 
-%There are also Intrusion Detection and Prevention Systems (IPDS) to identify malicious traffic based on know signatures. 
-To block unwanted traffic, operators typically use a combination of mitigation
-mechanisms such ACLs, blacklists/whitelists, rate-limiters or traffic redirection
-to scrubbers for deep packet inspection (DPI) e.g., malware detection.  
-Other middleboxes such as load balancers 
-aid detection by dropping traffic destined to blocked ports. 
-%er attacks (e.g., load balancers), operators may also set rate limiters at these devices.
-% o   Blacklists + Whitelists
-% o   Rate limiting at LBs
- % Inbound (host): Anti-malware protection at the VM level
-%\parab{Detect application-level attacks at hosts:}
-%Since most network-based detection in the cloud cannot look into the packet payloads at line speed, 
-To protect against application-level attacks, tenants have to install end host-based solutions
-for attack detection on their VMs. %inside the virtual machines.
-% Since our NetFlow data does not capture the packet payload, 
-% we cannot directly detect the application-layer attacks. 
-These software solutions periodically download the latest threat signatures 
-and scan the deployed instance for any compromises; diagnostic information such as logs and antimalware events are also typically logged for post-mortem analysis.  
-% Previous work~\cite{feamster-sigcomm-2006} has shown that it is possible to infer them from their network activities 
-% such as port and protocol combination. 
-% We will also show in our study that there are network-level distinctions between attack traffic and normal network traffic.
-% Therefore, it would be great if we can detect some application-level attacks in the network and provide scale out solutions that can look into packet payloads.
-%http://blogs.msdn.com/b/windowsazure/archive/2012/03/26/microsoft-endpoint-protection-for-windows-azure-customer-technology-preview-now-available-for-free-download.aspx
-
-% ·         Outbound:
-% o   VM rate limiting + ACLs + Anti-spoofing
-
-\parab{Outbound attacks.}
-To prevent outbound attacks,
-the hypervisor layer prevents spoofing of the source IP address in the outgoing traffic
-and caps outgoing bandwidth per VM.
-Similarly, access control rules can be set up to rate limit or 
-block the ports that the VMs are not supposed to use. Finally,  
-network security devices can be configured to mitigate outbound anomalies similar
-to inbound attacks. 
-%the cloud often rely on manually investigate the fraud-related incidents based on incident reports. 
-%Cloud provider security team Manually investigate fraud, abuse
-%To track fraud-related incidents, 
-% \delete{
-% an incident
-% reporting system is used by the cloud provider security team. This system
-% coordinates tasks among security engineers working investigating abuse and
-% fraud complaints. Each incident report has a unique identifier and contains
-% two types of content: (a) structured meta-data about the incident such as
-% IP/port information of  the origin and victim, complaint provided by the
-% victim, and incident start and end times,  and  (b) free-form text written by
-% security engineers to record the investigative steps and communication (e.g.,
-% via IM, email) with the victim or other engineers. While the structured data
-% contains a  high-level summary about the fraud, critical information such as
-% the  type of attack observed, mitigation actions, client security logs are
-% logged  in the free-form text and are hard to parse. 
-% Therefore, cloud operators often manually parse these reports and then turn on either hardware-based anomaly detector, or software-based detector for applications at hosts to inspect these problems.
-% }
-
-\parab{Limitations.}
+To detect attacks, cloud operators commonly deploy
+commercial hardware boxes at the network, such as Firewalls, IDS, DDoS-protection appliances. 
+However, Firewalls and IDS usually fail under high attack load. Even the specialized DDoS-protection appliances
+(which focuses on volumetric attacks) is sometimes overwhelmed by the volume of attack
+traffic seen by the cloud provider. Moreover, the DDoS-protection appliances has high monetary cost and inflexible progammability with third party software. Other software-based middleboxes (e.g. load balancers, OpenNF) can be specified to aid attack detection but they also cannot handle such high traffic load and it is still challenging to have quick detection relative to attack ramp-up rate. 
 %
-While many of these approaches are relevant to cloud defense (such as
-end-host filtering, and hypervisor controls), commercial hardware
-security appliances are inadequate for deployment cloud scale, for
-three reasons.
-
-% While current commercial security appliances are effective at safeguarding a variety of attacks,
-% they have three key limitations for deployment at cloud scale.
-
-\parae{High Cost.} These hardware boxes introduce unfavorable cost
-vs. capacity tradeoffs. In particular, they cost hundreds of thousands
-up to a few million dollars per box, but can {\em only} handle up to
-tens of gigabytes of traffic and risk failure under both network-layer
-and application-layer DDoS attacks.
-%In a 2011 survey, 36\% and 42\% of the respondents indicated failure of a firewall due to  at the application layer and network layer, respectively
-%~\cite{2011 ADC Security Survey Global Findings, http://goo.gl/A3b2Q}.
-~\cite{ADC}
-
-Thus, to handle
-traffic volume at cloud scale and increasingly high-volume DoS attacks 
-(e.g., 300 Gbps+~\cite{Q4report}), this approach would incur significant costs. Further, these devices
-need to be deployed in a redundant manner further increasing procurement and 
-operational costs. 
-%for fault tolerance. 
-
-\parae{Inflexibility.} Since these devices run proprietary software, they limit
-how operators can configure them to handle the increasing diversity of attacks today. 
-Given lack of rich programmable interfaces, 
-operators are forced to specify and manage a large number of policies themselves  
-for controlling traffic e.g., set thresholds for different protocols, ports, cluster, VIPs 
-at different time granularities. Further, 
-they limit effectiveness against increasingly 
-sophisticated attacks such as zero-day attacks. %detection and patching.
-Finally, these third-party devices may not be kept up to date with OS, firmware and builds which risks reducing their effectiveness against attacks. 
-%However, today's hardware appliances can only support a limited number of policies (< 1K) and a limited number of mitigation rules (<50). \minlan{why?}
-
-\parae{Risk collateral damage.} Since many attacks can ramp up
-in 10s of seconds to a few minutes (Section~\ref{sec:measurement}), a
-relatively high detection latency risks overloading the target VMs as
-well as the shared cloud infrastructure e.g., firewalls, load
-balancers and core links, which may cause collateral damage to
-co-hosted tenants.  Similarly, if we cannot revert fast
-enough when the attack subsides, we may mistakenly block legitimate
-traffic. Given that many security solutions apply traffic
-profiling and smoothing techniques to reduce false positives for
-attack detection~\cite{peakflow}, they may not be able to act quickly
-enough to avoid collateral damage.
-
-%While there have been some reports of individual attacks on enterprise and cloud networks~\cite{googlesecurityreport,Prolexic}, to the best of our knowledge, there have not been any systematic measurement studies of the types of attacks {\em on} and {\em off} the cloud, to guide the attack detection and mitigation system design. In fact, little is know about the prevalence, diversity, frequency, characteristics and correlation of these cloud-related attacks and their evolution over time. 
-
-% that analyze the ``big picture'' of
-%  network-based attacks} in the cloud or \emph{that focus on outgoing
-%  attacks from the cloud}, and \emph{what this implies for the design
-%  of attack detection and mitigation systems at cloud scale}.
-%For example, we lack an understanding of the prevalence of attacks,
-%their intensity and frequency, and their correlation properties as
-%well as their evolution over time.
+Prolexic~\cite{Prolexic} provides high-capacity private scrubbing networks but it also relies on fast and accurate attack detection. Further, it requires the traffic to be re-routed, which is not feasible for private tenant traffic in the cloud.
 %
-
-%In this paper, we investigate over 200 TB of NetFlow records collected from
-%dozens of edge routers spread across multiple geographically distributed data
-%centers of a large cloud provider.  We introduce four main techniques to
-%characterize network-based attacks from the NetFlow data, including traffic
-%volume-based, spread-based, signature-based, and communication pattern-based
-%approaches. Using these approaches, we identified ten different types of
-%attacks, ranging from network-level DDoS attacks to application-level spam.
-%Due to sampling in the NetFlow data and the fact that NetFlow lacks
-%application-level information, we may not be able to identify all the attacks
-%in the cloud e.g., HTTP Slowloris~\cite{cambiaso2012taxonomy}. 
-%Instead, we take a conservative approach to
-%identify those anomalies that exhibit four distinct features: (1) significant
-%traffic volume (bps, pps), (2) abnormal fan-in or fan-out (number of connections), (3)
-%abnormal packet header signatures (e.g., TCP flags), and (4) initiating communications with Internet malicious hosts (TDS~\cite{tds}).
-%We verify most of the attacks we identified with are verified by  
-%We use several detection tools, including automated analysis of incidence reports, 
-%a commercial DDoS-protection appliance specialized hardware anomaly detector, and a collection of honeypots.
-%All our detected attacks are real attacks as validated by inbound attack alerts reported by 
-%commercial DDoS-protection appliances and outbound attack incident reports written by operators. 
-%We do miss some of the attacks identified by these alerts and reports due to the low sampling rate of NetFlow logs, our conservative approach in attack identification, and the inability to identify application-level attacks without network-level signatures.
-%We have validated 67.6\% of the inbound attacks based on alerts reported by 
-%commercial DDoS-protection appliances and 100\% of outbound attacks based on incident reports written by operators.
-
-To provide an in-depth understanding of the identified attacks, we study the
-key properties of the attacks including their prevalence and evolution over
-time and the key traffic patterns of these attacks such as attack volume,
-intensity, and inter-arrival time.  Moreover, we investigate the impact of
-these attacks on cloud services, their origins/targets in the Internet, and
-those simultaneous attacks.
-
-%For inbound attacks, we study the network services that are affected and the origins of these attacks in the Internet. For outbound attacks, we study the amount of compromised services and the attack targets in the Internet. 
-%we design a methodology to estimate
-%attack properties for a wide variety of attacks both on the infrastructure
-%and services.
-%We develop an attack taxonomy to identify volumetric attacks (e.g., TCP
-%SYN flood, UDP bandwidth floods, DNS reflection), brute-force attacks
-%(e.g., on RDP, SSH and VNC sessions), spread-based attacks on specific
-%identifiers in five-tuple defined flows (e.g., spam, SQL server
-%vulnerabilities), and communication-based attacks (e.g., sending or
-%receiving traffic from Traffic Distribution Systems~\cite{tds}).
-
-%In this paper, we fill this void and make two important contributions:
-%(1) an extensive characterization of network-based 
-%attacks on the cloud infrastructure and
-%services, and 
-%(2) the design of an agile, resilient, and programmable 
-%yet flexible service for detecting and mitigating these attacks.
-
-%Specifically, there are several questions we need to understand:
-%(1) What is the diversity of the attacks? What are their prevalence and the evolution over time?
-
-%(2) What are their traffic patterns e.g., traffic volume, peak intensity, and port/protocol popularity?
-
-%(3) How long do they last and repeat? How fast do they ramp-up?
-
-%(4) Where do they originate from and what services do they target on?
-
-%(5) How do multiple attacks correlated?
-
-
-
-%While not all of these attacks are new, we show a strong evidence of
-%increasing scale, attack volume and sophistication of these attacks.
-
-We make the following major observations about the attacks in our cloud,  
-%on building attack prevention systems, 
-which also shed light on the key challenges in building cloud-scale attack detection and prevention systems. 
-
-\begin{encompact}
-\item We identified ten types of attacks for both inbound and outbound attacks (Table~\ref{tab:attacks}). As expected, DDoS attacks constitute a large fraction. However, there are also a significant amount of brute-force attacks (e.g., guessing password with SSH, RDP and VNC), port scans, communications with malicious hosts in the Internet (e.g., TDS), and application-level attacks (e.g., exploiting SQL vulnerabilities). These attacks are often not detected by cloud security appliances (e.g., DDoS prevention services~\cite{arborworldwideinfrasecurityreport, Prolexic}) and thus need more attention from cloud operators to safeguard their infrastructure and the hosted tenants. 
-
-%DDoS attacks (SYN flood, UDP flood, etc.) are still the dominant types of the attacks (XX\% for the inbound, and XX\% for the outbound). In addition, port scan is also a popular inbound attack. In particular, there are 30.6\% of inbound attacks coming from Botnets from the Internet.
-
-%\item 
-%We provide the evidence of showing the cloud is under around 100 attacks both for inbound and outbound at any given time. \Rui{Our study presents a diverse range of threats and the oversight of existing mitigation practice.} We also show around xx\% of VIPs are generating or receiving 100 attacks during one day.
-
-\item The number of attacks per day is relatively stable except the changes in inbound flood attacks and outbound spam attacks, indicating that the problem of network-based 
-attacks in the cloud is prevalent. 
-%Our cloud experiences a median of 70 inbound and 125 outbound concurrent attacks per minute. 
-The aggregate throughput of inbound attacks has a peak of 43.7 Gbps.
-The attack prevention systems should be scalable to handle both the large number as well as the high-volume of attacks while dynamically adapting their resource usage based on the attack patterns.
-
-%Our cloud experiences a median of 70 inbound and 125 outbound concurrent attacks per minute, and at least 5 types of concurrent attacks per minute.
+Google adopts an approach of absorbing DDoS bursts by killing low-priority jobs and pooling available servers. However, it is impossible to kill tenant instances in a multi-tenant cloud. 
 %
-%The number of both inbound and outbound attacks are stable over days. Most in- bound attack changes come from TCP SYN and UDP flood attacks. We also observe an outbound spam burst from many VIPs.
+None of these above systems provides comprehensive
+coverage of the large attack diversity in the cloud. 
+
+In this paper, we propose a new paradigm of  
+{\em detection-as-a-service} and {\em mitigation-as-a-service}
+that leverages commodity VMs for attack detection. 
+%somewhat counter-intuitive solution: using
+Our approach, instantiated in a service called \nimbus, combines the
+elasticity of cloud computing resources 
+with the kinds of programmability seen in software-defined networks
+(SDN).
 %
-%Amongallthe(VIP,day) pairs under inbound/outbound attacks, 98%/95% experience occasional attacks (<10 attacks/day) and 2%/5% experi- ence frequent attacks (�10 attacks/day). Those VIPs with occasional attacks have more TDS, port scan, brute force, and spam attacks; those with frequent attacks are often un- der flood attacks.
-
-\item Most types of attacks (except DNS reflection) have short durations within 10 minutes, inter-arrival times of hundreds of minutes. DDoS attacks often have higher throughput (10K-100K sampled pkts/min) than other attacks, and have a quick ramp-up time of 2-3 minutes. Such attack intensity requires fast and accurate attack detection and prevention for a wide variety of types of attacks. 
-
-%Most types of attacks (except DNS) have short durations within 10 minutes. At the 99th percentile, attacks can last for hours or days. Outbound flood and spam attacks have very short median durations.
+It allows us to scale resource usage with traffic demands, flexibility
+to handle attack diversity, and resilience against volumetric attacks
+designed to subvert the detection infrastructure.
 %
-%Most types of attacks have the median inter-arrival time as hundreds of minutes. Outbound SYN and UDP attacks have smaller inter-arrival times than inbound attacks.
+\nimbus's central controller directs different traffic aggregates to
+different VMs, each of which detects attacks destined to different
+sets of cloud services.
 %
-%DDoS attacks (flood and DNS reflection attacks) have higher throughput than other attacks and higher inbound throughput than outbound. UDP flood attacks have a strong correlation between peak sizes and inter-arrival times.
+Each VM can be easily programmed to detect the wide variety of attacks
+discussed above, and when a VM is close to resource exhaustion, the
+controller can divert some of its traffic to other, possibly newly
+instantiated, VMs.
 %
-%other attacks and higher inbound throughput than outbound. UDP flood attacks have a strong correlation between peak sizes and inter-arrival times.
-
-%\item  \minlan{merge these better}
-%Specifically, we find that cloud infrastructures must be able to scale
-%to handle over 100Gbps of attack traffic in the worst case, and that
-%outbound attacks often match inbound attacks in intensity and
-%prevalence, but the two directions are qualitatively different in the
-%types of attacks seen.
-% Moreover, attack throughputs vary by 3-4 orders of magnitude, median
-%attack ramp-up time in the outbound direction is a minute, and
-%outbound attacks also have smaller inter-arrival times than inbound
-%attacks.
-%Compared with inbound attacks, outbound attacks have smaller interarrival times and 50\% of outbound attacks ramp up within one minute.
-%\item  From identifying and correlating multiple attack characteristics, we found that xx\% of volume-based attacks have a transient, bursty nature -- short duration, but short inter-arrival times, and short ramp-up rates, indicating high requirements on fast attack detection and mitigation within minutes to protect the infrastructure. 
-%\minlan{fix numbers}
-
-
-%\item While existing DDoS mitigation services (e.g. Abor~\cite{Abor},Prolexic~\cite{Prolexic}) are mainly focusing on well-known high volume DDoS attacks (e.g. TCP-SYN, UDP), our study provides the first strong evidence of prevalence of 10 types of cloud attacks by developing four novel detection techniques (i.e. volumetric-based, signature-based, spread-based, and communication-pattern-based). While not all of these attacks are new, we show a strong evidence of increasing scale, attack volume and sophistication of these attacks.
-
-%\item We provide first study to show the evidence of prevalence and characteristics of outbound attacks from cloud. While  existing ticket report system indicates 41.74\% of the incidents are SPAM, our study provides the evidence to show the outbound attacks are dominated by flood attacks (SYN flood 17.6\%, UDP flood 18.7\%, etc.), TDS (21.3\%) and brute force attacks (19.5\%). 
-
-
-%On the other hand, lots of small volume attacks have relatively longer duration, which requires high detection accuracy to prevent the small-scale attack from long-term impact.
-
-%\item We find simultaneous  attacks of different types to or from a single VIP, which is an evidence that attackers start to use more advanced and mixed attacks both towards and out of the cloud. \minlan{give an example}
-
-
-\item We identified the top 10 ASes for inbound and outbound attacks respectively. Most of them 
-originate from hosts located in Europe and Asia. Some attacks (especially TCP SYN flood) have IPs evenly distributed in the IP space. 
-%, except for ICMP, spam and port scan, and SQL. 
-We also observe inbound attacks from data centers and mobile networks, and outbound attacks leveraging DNS servers within a major ISP.
-
-%We also observe that six out of the top 10 ASes that generated the inbound attacks are from Asia which may due to the fast technical expansion and the shortage of management in these regions. We find  a single Brute-Force attack against on 66 VIPs simultaneously, indicating 
-%network-wide vulnerability exploration.
-
-\item  We identified the majority of inbound attack sources and outbound attack targets as coming from DSL, optical fiber, and wireless connections. In particular, 2.1\% inbound attack sources and 0.9\% outbound attack targets use wireless connections, likely indicating the spread of malicious mobile apps. 
-%\Rui{add number to show outbound attacks against wireless cellular network}
-
-%\item We found inbound TCP-SYN attack is mostly using spoofed IP addresses, while inbound SPAM and PortScan are from a relatively small number of sources.
-
-\item There are simultaneous attacks of the same type on multiple VIPs, likely controlled by the same attacker. 
-%In particular, inbound brute forces attacks are simultaneously launched on 53 VIPs. Outbound brute force attacks are simultaneously launched on 20 VIPs.
-%There are also multiple types of attacks simultaneously launched on a single VIP. 
-Multiple DDoS attacks are launched concurrently on the same VIP. Brute-force attacks are often combined with TCP SYN and ICMP attacks on the same VIP. There also exist concurrent inbound and outbound attacks.
-\end{encompact}
+There are several key challenges in designing and implementing
+\nimbus: including auto-scaling VMs to minimize traffic
+redistributions, devising appropriate interfaces between the
+controller and the VMs, and determining an efficient yet clean
+functional separation between user and kernel-space processing for
+traffic.
+%
+Our prototype built using servers with 10G links shows that \nimbus
+can quickly scale-out virtual machines to analyze traffic at line
+speed while providing reasonable accuracy for attack detection.
 
 
 
-%Same type of attack will launch simultaneously on up to around 10 VIPs, expect for Brute-Force happening on up to 66 VIPs and outbound SPAM happening on up to 30 VIPs simultaneously, indicating either horizontal vulnerability searching or spamming. Further, we found up to five different types of attacks generated to or from single VIP simultaneously, indicating malicious actor leverages multiple methods or techniques for the hope of pass the firewall or detection system.
 
-
-
-%(4) We found inbound TCP-SYN attack is mostly using spoofed IP addresses. Further, inbound SPAM attack originates from a relatively small number of source IP addresses and 40\% of PortScan source addresses come from 5.135.0.0/16. 
-%From the attack source geolocation, we found high attack intensity originated in the eastern United States, Central and Eastern Europe, and in East Asia. We also found the six out of top 10 ASes that generated the inbound attacks are from Asia which may due to the fast technical expansion and the shortage of management in these regions. Moreover, we found 3\% of attack sources are using wireless connection, indicating likely the spread of malicious mobile Apps.
-% volumetric (e.g., TCP SYN flood, UDP bandwidth floods, DNS reflection),
-%signature-based attacks on specific identifiers in five-tuple defined flows (e.g., NULL, Xmas), spread-based attacks over spread range of sources  (e.g., spam, SQL server vulnerabilities), 
-% and communication-based attacks (e.g., sending or receiving traffic from TDS nodes~\cite{tds}). Existing DDoS mitigation services\cite{xx} mainly focus on inbound volumetric attacks that may affect the cloud infrastructure, however, our measurement study quantifies the outbound attacks that may affect external sites and shows other attack types that may affect the individual services hosted in the cloud. Among them, the inbound attacks are dominated by TDS (30.6\%), followed by port scan (14.2\%), brute force (10.3\%) and the flood attacks. The outbound attacks are dominated by flood attacks (SYN flood 17.6\%, UDP flood 18.7\%, etc.), TDS (21.3\%) and brute force attacks (19.5\%).  
-
-
-
- %We show that some attacks share common ports, which can be used for blacklisting. However, blacklisting is not effective for blocking source IPs because the majority source IPs of attacks are evenly distributed across the address space (except spam) indicating widespread spoofing and use of
-% proxies.  
-
-
-
-% We have validated  67.6\% of inbound and 100\% of outbound attacks with incident reports and hardware anomaly alerts.
-% While not all of these attacks are new, we show a strong evidence of increasing scale, attack volume and sophistication of these attacks. 
-
-
-% What are their traffic patterns e.g., traffic volume, 
-% peak intensity, and port/protocol popularity?
-% How long do they last?
-% Where do they originate from or do they use proxies or spoofing? 
-% %Do they exhaust resources at server, firewalls or load balancers?
-% Answering these key questions will help guide cloud operators and researchers to 
-% develop effective mechanisms for (a) attack detection and mitigation,
-% (b)  operational improvements to avoid recurrences, and
-% (c) ensuring security certification and compliance 
-
-
-%%% Local Variables: 
-%%% mode: latex
-%%% TeX-master: "cloudcops"
-%%% End: 
