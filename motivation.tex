@@ -1,0 +1,117 @@
+\section{Background and Motivation}
+
+In this section we first motivate the need to detect and mitigation
+network-based attacks in the cloud and then discuss the limitation of current 
+approaches.
+
+\subsection{Network-Based Attacks in the Cloud.}
+The cloud network we study comprises multiple geographically
+replicated datacenters connected to each other and to the Internet via
+edge and core routers (collectively called border routers).
+%
+The provider hosts multiple services and each hosted service is
+assigned a public virtual IP (VIP) address; we use
+the terms VIP and service interchangeably.
+%
+User requests are typically load balanced across a pool of servers
+that are assigned direct IP (DIP) addresses for intra-datacenter
+routing. 
+%\ramesh{Can a service be hosted on multiple sites? Does it have one VIP?}
+%
+Incoming traffic first traverses the border routers, then security
+appliances like firewalls, DDoS protection appliances and intrusion detection systems, before
+hitting the load balancers that distribute traffic across service DIPs.
+%
+In this paper, we study network-based attacks on cloud infrastructure
+(henceforth, \emph{cloud attacks} or simply attacks).
+
+Two aspects of cloud infrastructure make it important to study cloud
+attacks.
+%
+First, compared to enterprise-hosted services, cloud services have
+much greater diversity and scale; the cloud provider we study hosts
+more than 10,000 services ranging from web storefronts, media streaming,
+mobile apps, storage and backup to large online marketplaces. 
+%
+Unfortunately, this also makes the cloud a %attractive %natural 
+target for attackers; a single, well-executed attack can cause more direct
+and collateral damage than individual attacks on enterprise-hosted services.
+%
+While such a large service diversity allows observing 
+a wide variety of \emph{inbound} attacks, it 
+also makes it hard to distinguish attacks from legitimate traffic 
+as these services likely generate {\em all possible} traffic patterns in normal operation.
+%
+%\ramesh{Navendu, please check and elaborate on this point.}
+
+Second, attackers can abuse the cloud resources to launch \emph{outbound} attacks.
+For instance, they can launch brute-force attacks (e.g., password guessing) to 
+compromise vulnerable VMs 
+%Further, poor security practices and lack of control on third-party tenants may expose
+%vulnerabilities which attackers would be likely to compromise and exploit. 
+%The VMs running services on the cloud can be compromised using automated, vulnerable VMs 
+and gain bot-like control of the infected ones.
+%
+These compromised VMs may be used for a variety of adversarial purposes such as
+YouTube click fraud, BitTorrent hosting, illegal Bitcoin
+mining, send SPAM, propagate malware, or launch bandwidth-flooding DoS attacks
+(cloud providers typically cap outgoing bandwidth per VM, but not in aggregate across a tenant.).
+
+\subsection{Limitations of current approaches.}
+%
+While many of these approaches are relevant to cloud defense (such as
+end-host filtering, and hypervisor controls), commercial DDoS-protection
+ appliances are commonly deployed for dedicated attack detection and mitigation. 
+ %
+However, from the observation of recent attacks, we argue that those commercial hardware appliances 
+are inadequate for attacks in cloud scale, for
+three reasons.
+
+% While current commercial security appliances are effective at safeguarding a variety of attacks,
+% they have three key limitations for deployment at cloud scale.
+
+\parae{High Cost.} These hardware boxes introduce unfavorable cost
+vs. capacity tradeoffs. In particular, they cost hundreds of thousands
+up to a few million dollars per box, but can {\em only} handle up to
+tens of gigabytes of traffic and risk failure under both network-layer
+and application-layer DDoS attacks.
+%In a 2011 survey, 36\% and 42\% of the respondents indicated failure of a firewall due to  at the application layer and network layer, respectively
+%~\cite{2011 ADC Security Survey Global Findings, http://goo.gl/A3b2Q}.
+~\cite{ADC}
+
+Thus, to handle
+traffic volume at cloud scale and increasingly high-volume DoS attacks 
+(e.g., 300 Gbps+~\cite{Q4report}), this approach would incur significant costs. Further, these devices
+need to be deployed in a redundant manner further increasing procurement and 
+operational costs. 
+%for fault tolerance. 
+
+\parae{Inflexibility.} Since these devices run proprietary software, they limit
+how operators can configure them to handle the increasing diversity of attacks today. 
+Given lack of rich programmable interfaces, 
+operators are forced to specify and manage a large number of policies themselves  
+for controlling traffic e.g., set thresholds for different protocols, ports, cluster, VIPs 
+at different time granularities. Further, 
+they limit effectiveness against increasingly 
+sophisticated attacks.
+% such as zero-day attacks. %detection and patching.
+Finally, these third-party devices may not be kept up to date with OS, firmware and builds which risks reducing their effectiveness against attacks. 
+%However, today's hardware appliances can only support a limited number of policies (< 1K) and a limited number of mitigation rules (<50). \minlan{why?}
+
+\parae{Risk collateral damage.} Since many attacks can ramp up
+in 10s of seconds to a few minutes, a
+relatively high detection latency risks overloading the target VMs as
+well as the shared cloud infrastructure e.g., firewalls, load
+balancers and core links, which may cause collateral damage to
+co-hosted tenants.  Similarly, if we cannot revert fast
+enough when the attack subsides, we may mistakenly block legitimate
+traffic. Given that many security solutions apply traffic
+profiling and smoothing techniques to reduce false positives for
+attack detection~\cite{peakflow}, they may not be able to act quickly
+enough to avoid collateral damage.
+
+
+
+
+
+
