@@ -52,7 +52,146 @@ In April 2011, an attack on the Sony Playstation network compromising
 more than 100 million customer accounts was carried out by a malicious
 service hosted on Amazon EC2~\cite{sonyattack}.
 
-While there have been some reports of individual attacks on enterprise and cloud networks~\cite{googlesecurityreport,Prolexic}, to the best of our knowledge, there have not been any systematic measurement studies of the types of attacks {\em on} and {\em off} the cloud, to guide the attack detection and mitigation system design. In fact, little is know about the prevalence, diversity, frequency, characteristics and correlation of these cloud-related attacks and their evolution over time. 
+According to the recent reports of individual attacks on enterprise and cloud
+ networks~\cite{googlesecurityreport,Prolexic}, we highlight several unique features and technical trend
+ of attacks in the cloud:
+ 1) Large-scale. These attacks have 
+ the volume up to around 100 Gbps against a single cloud service. 
+ 2) High diversity of types. The attack types range from network-layer (e.g. SYN flood, UDP flood) to
+ application-layer (e.g. HTTP GET, SQL injection) with different characteristics on volume, number of connection, packet header signatures. 
+ 3) Fast ramp-up rate. The attack traffic ramps up quickly and victimize the target cloud service usually within one minute.
+This arises high challenges for attack detection and mitigation in the cloud to meet those requirements.
+
+\subsection{Current approaches and limitations}
+
+
+
+
+
+
+
+
+
+
+
+\parab{Inbound attacks.}
+To detect incoming attacks, cloud operators commonly adopt a
+defense-in-depth approach by deploying (a) commercial hardware boxes
+(e.g., Firewalls, IDS, DDoS-protection appliances) at the network
+level, and (b) proprietary software (e.g., Host-based IDS,
+anti-malware) at the host level.
+%at the border routers. \navendu{ (e.g., syn auth cookie for anti-spoofing?) }
+% Hardware detection is simple, e.g., TCP SYN cookies
+% state-full analysis with memory efficient
+% is good once you know what to look at
+The network boxes analyze inbound traffic to protect against a variety
+of well-known attacks such as TCP SYN, TCP NULL, UDP, and fragment
+misuse.
+%, and then perform stateful analysis with efficient memory usage. 
+%There are also Intrusion Detection and Prevention Systems (IPDS) to identify malicious traffic based on know signatures. 
+To block unwanted traffic, operators typically use a combination of mitigation
+mechanisms such ACLs, blacklists/whitelists, rate-limiters or traffic redirection
+to scrubbers for deep packet inspection (DPI) e.g., malware detection.  
+Other middleboxes such as load balancers 
+aid detection by dropping traffic destined to blocked ports. 
+%er attacks (e.g., load balancers), operators may also set rate limiters at these devices.
+% o   Blacklists + Whitelists
+% o   Rate limiting at LBs
+ % Inbound (host): Anti-malware protection at the VM level
+%\parab{Detect application-level attacks at hosts:}
+%Since most network-based detection in the cloud cannot look into the packet payloads at line speed, 
+To protect against application-level attacks, tenants have to install end host-based solutions
+for attack detection on their VMs. %inside the virtual machines.
+% Since our NetFlow data does not capture the packet payload, 
+% we cannot directly detect the application-layer attacks. 
+These software solutions periodically download the latest threat signatures 
+and scan the deployed instance for any compromises; diagnostic information such as logs and antimalware events are also typically logged for post-mortem analysis.  
+% Previous work~\cite{feamster-sigcomm-2006} has shown that it is possible to infer them from their network activities 
+% such as port and protocol combination. 
+% We will also show in our study that there are network-level distinctions between attack traffic and normal network traffic.
+% Therefore, it would be great if we can detect some application-level attacks in the network and provide scale out solutions that can look into packet payloads.
+%http://blogs.msdn.com/b/windowsazure/archive/2012/03/26/microsoft-endpoint-protection-for-windows-azure-customer-technology-preview-now-available-for-free-download.aspx
+
+% ·         Outbound:
+% o   VM rate limiting + ACLs + Anti-spoofing
+
+\parab{Outbound attacks.}
+To prevent outbound attacks,
+the hypervisor layer prevents spoofing of the source IP address in the outgoing traffic
+and caps outgoing bandwidth per VM.
+Similarly, access control rules can be set up to rate limit or 
+block the ports that the VMs are not supposed to use. Finally,  
+network security devices can be configured to mitigate outbound anomalies similar
+to inbound attacks. 
+%the cloud often rely on manually investigate the fraud-related incidents based on incident reports. 
+%Cloud provider security team Manually investigate fraud, abuse
+%To track fraud-related incidents, 
+% \delete{
+% an incident
+% reporting system is used by the cloud provider security team. This system
+% coordinates tasks among security engineers working investigating abuse and
+% fraud complaints. Each incident report has a unique identifier and contains
+% two types of content: (a) structured meta-data about the incident such as
+% IP/port information of  the origin and victim, complaint provided by the
+% victim, and incident start and end times,  and  (b) free-form text written by
+% security engineers to record the investigative steps and communication (e.g.,
+% via IM, email) with the victim or other engineers. While the structured data
+% contains a  high-level summary about the fraud, critical information such as
+% the  type of attack observed, mitigation actions, client security logs are
+% logged  in the free-form text and are hard to parse. 
+% Therefore, cloud operators often manually parse these reports and then turn on either hardware-based anomaly detector, or software-based detector for applications at hosts to inspect these problems.
+% }
+
+\parab{Limitations.}
+%
+While many of these approaches are relevant to cloud defense (such as
+end-host filtering, and hypervisor controls), commercial hardware
+security appliances are inadequate for deployment cloud scale, for
+three reasons.
+
+% While current commercial security appliances are effective at safeguarding a variety of attacks,
+% they have three key limitations for deployment at cloud scale.
+
+\parae{High Cost.} These hardware boxes introduce unfavorable cost
+vs. capacity tradeoffs. In particular, they cost hundreds of thousands
+up to a few million dollars per box, but can {\em only} handle up to
+tens of gigabytes of traffic and risk failure under both network-layer
+and application-layer DDoS attacks.
+%In a 2011 survey, 36\% and 42\% of the respondents indicated failure of a firewall due to  at the application layer and network layer, respectively
+%~\cite{2011 ADC Security Survey Global Findings, http://goo.gl/A3b2Q}.
+~\cite{ADC}
+
+Thus, to handle
+traffic volume at cloud scale and increasingly high-volume DoS attacks 
+(e.g., 300 Gbps+~\cite{Q4report}), this approach would incur significant costs. Further, these devices
+need to be deployed in a redundant manner further increasing procurement and 
+operational costs. 
+%for fault tolerance. 
+
+\parae{Inflexibility.} Since these devices run proprietary software, they limit
+how operators can configure them to handle the increasing diversity of attacks today. 
+Given lack of rich programmable interfaces, 
+operators are forced to specify and manage a large number of policies themselves  
+for controlling traffic e.g., set thresholds for different protocols, ports, cluster, VIPs 
+at different time granularities. Further, 
+they limit effectiveness against increasingly 
+sophisticated attacks such as zero-day attacks. %detection and patching.
+Finally, these third-party devices may not be kept up to date with OS, firmware and builds which risks reducing their effectiveness against attacks. 
+%However, today's hardware appliances can only support a limited number of policies (< 1K) and a limited number of mitigation rules (<50). \minlan{why?}
+
+\parae{Risk collateral damage.} Since many attacks can ramp up
+in 10s of seconds to a few minutes (Section~\ref{sec:measurement}), a
+relatively high detection latency risks overloading the target VMs as
+well as the shared cloud infrastructure e.g., firewalls, load
+balancers and core links, which may cause collateral damage to
+co-hosted tenants.  Similarly, if we cannot revert fast
+enough when the attack subsides, we may mistakenly block legitimate
+traffic. Given that many security solutions apply traffic
+profiling and smoothing techniques to reduce false positives for
+attack detection~\cite{peakflow}, they may not be able to act quickly
+enough to avoid collateral damage.
+
+%While there have been some reports of individual attacks on enterprise and cloud networks~\cite{googlesecurityreport,Prolexic}, to the best of our knowledge, there have not been any systematic measurement studies of the types of attacks {\em on} and {\em off} the cloud, to guide the attack detection and mitigation system design. In fact, little is know about the prevalence, diversity, frequency, characteristics and correlation of these cloud-related attacks and their evolution over time. 
 
 % that analyze the ``big picture'' of
 %  network-based attacks} in the cloud or \emph{that focus on outgoing
@@ -63,26 +202,26 @@ While there have been some reports of individual attacks on enterprise and cloud
 %well as their evolution over time.
 %
 
-In this paper, we investigate over 200 TB of NetFlow records collected from
-dozens of edge routers spread across multiple geographically distributed data
-centers of a large cloud provider.  We introduce four main techniques to
-characterize network-based attacks from the NetFlow data, including traffic
-volume-based, spread-based, signature-based, and communication pattern-based
-approaches. Using these approaches, we identified ten different types of
-attacks, ranging from network-level DDoS attacks to application-level spam.
-Due to sampling in the NetFlow data and the fact that NetFlow lacks
-application-level information, we may not be able to identify all the attacks
-in the cloud e.g., HTTP Slowloris~\cite{cambiaso2012taxonomy}. 
-Instead, we take a conservative approach to
-identify those anomalies that exhibit four distinct features: (1) significant
-traffic volume (bps, pps), (2) abnormal fan-in or fan-out (number of connections), (3)
-abnormal packet header signatures (e.g., TCP flags), and (4) initiating communications with Internet malicious hosts (TDS~\cite{tds}).
+%In this paper, we investigate over 200 TB of NetFlow records collected from
+%dozens of edge routers spread across multiple geographically distributed data
+%centers of a large cloud provider.  We introduce four main techniques to
+%characterize network-based attacks from the NetFlow data, including traffic
+%volume-based, spread-based, signature-based, and communication pattern-based
+%approaches. Using these approaches, we identified ten different types of
+%attacks, ranging from network-level DDoS attacks to application-level spam.
+%Due to sampling in the NetFlow data and the fact that NetFlow lacks
+%application-level information, we may not be able to identify all the attacks
+%in the cloud e.g., HTTP Slowloris~\cite{cambiaso2012taxonomy}. 
+%Instead, we take a conservative approach to
+%identify those anomalies that exhibit four distinct features: (1) significant
+%traffic volume (bps, pps), (2) abnormal fan-in or fan-out (number of connections), (3)
+%abnormal packet header signatures (e.g., TCP flags), and (4) initiating communications with Internet malicious hosts (TDS~\cite{tds}).
 %We verify most of the attacks we identified with are verified by  
 %We use several detection tools, including automated analysis of incidence reports, 
 %a commercial DDoS-protection appliance specialized hardware anomaly detector, and a collection of honeypots.
-All our detected attacks are real attacks as validated by inbound attack alerts reported by 
-commercial DDoS-protection appliances and outbound attack incident reports written by operators. 
-We do miss some of the attacks identified by these alerts and reports due to the low sampling rate of NetFlow logs, our conservative approach in attack identification, and the inability to identify application-level attacks without network-level signatures.
+%All our detected attacks are real attacks as validated by inbound attack alerts reported by 
+%commercial DDoS-protection appliances and outbound attack incident reports written by operators. 
+%We do miss some of the attacks identified by these alerts and reports due to the low sampling rate of NetFlow logs, our conservative approach in attack identification, and the inability to identify application-level attacks without network-level signatures.
 %We have validated 67.6\% of the inbound attacks based on alerts reported by 
 %commercial DDoS-protection appliances and 100\% of outbound attacks based on incident reports written by operators.
 
