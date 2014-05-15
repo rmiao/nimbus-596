@@ -1,1 +1,37 @@
 \section{evaluate}
+\subsection{Implementation.}
+In this section, we describe the implementation of NIMBUS following the structure in design section.
+
+\parae{VMSentry.}
+To improve the overall performance, we tailored version 3.0 linux kernel and build a system image with the help of embedded linux tools. In order to further improve the network performance, we configured the kernel to support para-virtualized drivers.
+
+\parae{Hypervisor.}
+We use KVM as the virtualization platform and the hypervisor operating system is Ubuntu Server 12.04. As mentioned in previous section, all the network interface of VMSentry is connected to a bridged network. For the network bridge, we use a modified version of Open VSwitch, which support uniform sampling.
+
+\parae{VM management.}
+We implement monitor script that connects the serial console of each VMSentry and do the following job: monitor workload; and allocate new VMSentry on demand.
+
+\parae{NIMBUS Controller.}
+We use ovs-controller to control the traffic.
+
+\subsection{System Benchmarks.}
+\parae{Hardware setup.}
+The prototype has two servers and one switch interconnected by 10 Gbps links. We use a Dell PowerEdge R815 machine (32 cores and 32GB memory) acting as the traffic generator, and another Dell PowerEdge R815 machine (48 cores and 32GB memory) as the traffic receiver, each with one 10GE NIC connecting to the 10GE physical switch. We install Ubuntu Server 12.04 as hypervisor on the receiver machine that hosts VMs. Each VM has 1 core and 256 MB memory, and runs the slim Linux.
+
+\parae{Profiling VM instantiation}
+To have a better understanding of the factors that influence the instantiation time, we analysed the code of virtualization platform. We get the breakdown of instantiation time for the first VMSentry via the clock\_gettime() function, and record them using the printf() function.
+
+\begin{figure}[H]
+\includegraphics[width=0.4\textwidth]{figs/instantiation.png}
+\caption{breakdown of VM instantiation time.}
+\end{figure}
+
+The result in figure 1 shows that, instantiating a new VM from scratch can be done within 300 ms. And the main part of instantiation time are network setup and loading snapshot.
+
+\parae{CPU Overhead}
+
+
+\begin{figure}[H]
+\includegraphics[width=0.4\textwidth]{figs/CPU.png}
+\caption{CPU Overhead.}
+\end{figure}
