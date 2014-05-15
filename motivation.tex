@@ -110,8 +110,30 @@ profiling and smoothing techniques to reduce false positives for
 attack detection~\cite{peakflow}, they may not be able to act quickly
 enough to avoid collateral damage.
 
+\subsection{Detection/mitigation-as-a-service}
+To overcome some of these limitations, we argue that we need to
+re-think attack detection in the context of clouds.  To this end, we
+describe the architecture of \nimbus, a scale-out VM-based service for
+detecting and mitigating to network-based attacks in the cloud.  In contrast
+to expensive hardware appliances, our key idea is to leverage the core
+principles in cloud computing (elastic scaling of resources on demand)
+and software-defined networks (programmability of multiple network
+layers) to introduce a new paradigm of {\em detection-as-a-service}
+and {\em mitigation-as-a-service}.  We first present the requirements
+based on our measurement study and then describe its design and
+implementation.
 
+\parab{1.} Scaling to match datacenter traffic capacity at the order of hundreds of gigabits per second. 
+The service should auto-scale to enable agility and cost-effectiveness.  
 
+\parab{2.} Programmability to handle new and diverse types of network-based attacks, and flexibility to    
+allow tenants/operators to configure policies %and roll out updates %in an attack-specific and traffic-based patterns. %schemes that are 
+specific to the traffic patterns and attack characteristics.
+
+\parab{3.} Fast and accurate detection and mitigation for attacks that ramp-up within one minute; 
+once the attack subsides, we should revert the mitigation to avoid blocking legitimate traffic. 
+
+\parab{4.} Robustness to prevent sophisticated attacks from a wise adversary, who knows our system well and want to victimize either the detection service or individual cloud service. 
 
 
 

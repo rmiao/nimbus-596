@@ -1,0 +1,25 @@
+\section{Discussion}
+
+\parab{Robust to wise adversary.}
+A wise adversary may be aware of our detection and mitigation system and generate sophisticated attacks to a) evade our \nimbus system; b) reduce the effectiveness of \nimbus system.
+%
+For example, the wise adversary may generate attack burst in a very short amount of time and repeat it periodically but with a relatively low average throughput. 
+%
+\nimbus may highly likely miss this attack from the use of traffic sampling. 
+%
+Another example, the wise adversary may become aware of the stage of mitigation. So he can subside the attack when \nimbus is scaled-up and launch it again when the system is about to scale-back. Doing so will cause fluctuation and decreasing efficiency in our system.
+%
+How to design a robust system to defense such a wise adversary is a challenge problem.
+
+\parab{Mitigation-as-a-service.}
+Once an attack being identified, the system needs to provide a set of functionalities to mitigate attacks.
+%
+Since the system can track the traffic changes, it can potentially identify the begin of an attack. 
+%
+For example, we can identify and mitigate an attack when the traffic starts to ramp-up and, as a result, minimize its damage to the target service. 
+%
+In this sense, we need to investigate when to start and stop the mitigation, which flow to mitigate so we achieve both effectiveness and low collateral damage to legitimate traffic, 
+and how to adjust detection accuracy for fast attack detection but with low false positive. 
+%
+In general, we need to consider the balance of resource usage of detecting and mitigating attacks, detection accuracy, and collateral damage to legitimate traffic.
+
