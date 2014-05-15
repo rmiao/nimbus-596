@@ -1,0 +1,91 @@
+\section{Related Work \label{sec:related}}
+
+%Our work is inspired by related work in attack detection as discussed below.
+
+%\parab{Attack detection techniques and systems:}
+%
+There have many proposals for efficient measurement and detection of
+attacks
+using specialized network hardware~\cite{estan2003new, minimalist, csamp}.
+Sekar et al.~\cite{sekar2006lads} develop a triggered, multi-stage DDoS detection system 
+for a large ISP to identify customers under attack. 
+Kandula et al.~\cite{kandula2005botz} propose improvements to 
+CAPTCHA-based defenses to 
+identify attackers that keep sending wrong solutions at a high-rate. 
+ Ranjan et al.~\cite{ranjan2006ddos} propose a session scheduling algorithm to detect DoS attacks. 
+Lo et al.~\cite{lo2010cooperative} propose a cooperative IDS approach  
+where attack alerts are exchanged between different regions in a cloud network. 
+Our work explores a complementary direction of integrating elasticity 
+using commodity VMs and programmability in SDNs to enable detection
+and mitigation as a service.
+% 
+%-based framework that is flexible for operators to plug in different measurement solutions.
+%
+In comparison to prior  measurement systems~\cite{csamp, opensketch,
+  measurement:techrep} which allocate fixed amount of resources to different
+measurement tasks, our programming abstractions enable 
+dynamically adapting resource usage in proportion to traffic. 
+Auto-scaling has also been used 
+%is commonly used in cloud computing to handle dynamic workload
+%patterns for inhas also been used in other efforts 
+to support load balancing~\cite{Patel13} and resource allocation for
+job execution~\cite{tide, autoscale}.
+% We design an autoscale system for attack detection by leveraging the elasticity of VMs in the cloud.
+
+% There are three attacker detection approaches: misuse detection, anomaly detection, and specification-based detection~\cite{mirkovic2004taxonomy}. 
+% Honeypots are usually an effective detection tool against many DoS attack instances~\cite{spitzner2003honeypots}. For instance, in shadow honeypots, false alarms are reduced by re-routing suspected requests transparently to instrumented servers to detect attacker attempts to exploit vulnerabilities~\cite{anagnostakis2005detecting}. 
+% Estan et al.~\cite{estan2003new} propose an elegant algorithm to detect \textit{heavy-hitter} network flows with low memory requirements to suit in-router implementations. Their sample-and-hold
+% technique is proposed for network-level detection and requires an operator-specified threshold to identify heavy-hitters. 
+% %To detect flows that deviate from pre-defined specifications, Chuah et al.~\cite{chuah2003dcap} proposed an $\sqrt{N}$ distributed algorithm. 
+% Kandula et al.~\cite{kandula2005botz} improve CAPTCHA-based defenses by detecting attackers that keep sending wrong solutions at a high-rate. 
+% Ranjan et al.~\cite{ranjan2006ddos} enumerate a set of abnormal request behaviors that DDoS attackers use and propose a session scheduling algorithm based on a per-session based suspicion level. The paper~\cite{feamster-2006-sigcomm} leverages network traffic patterns to detect spams.
+% Our work is not novel in attack detection solutions, but instead combines existing methods that fit cloud attack detection by leveraging NetFlow data (for anomaly detection), botnet locations (for specification-based detection), and honeypot data (for misuse detection). 
+
+
+%The application of intrusion detection systems (IDSes) in cloud environments is a research field
+%that is gaining interest~\cite{vieira2010intrusion,kenny2005towards,roschke2009intrusion} due to the increasing prominence of cloud computing services. Leu et al.~\cite{leu2005integrating} present a solution based on analyzing data from a grid's network although they cannot detect grid-specific attacks. Feng et al.~\cite{feng2006ghids} integrate a host-based IDS into a grid environment, providing protection against typical operating system attacks, but not the ones that might target middleware vulnerabilities. Lo et al.~\cite{lo2010cooperative} propose a cooperative intrusion detection system for cloud computing network to reduce the impact of a DoS attack where cloud computing regions under attack exchange alert messages to learn from the experience of others. 
+%In addition, many industry providers collaborate in sharing data on attacks and vulnerabilities to prevent their spread and develop mitigation techniques~\cite{csc}. 
+%Google maintains a web security site listing up to 10K infected %malware and phishing 
+%sites and found that most malware-ridden sites are legitimate ones~\cite{googlesecurityreport}.
+
+
+%how long it takes compromised sites to clean up~\cite{}.
+%http://technet.microsoft.com/en-us/library/cc959354.aspx
+
+% \parab{Attack mitigation methods:}
+% There have also been a large amount of work on attack mitigations.
+% Blasklist is the most common strategy and many papers (DOMINO) have evaluated the scale and temporal effect of blacklist.
+% "DDoS Defense by Offense sigcomm 06" the victim service encourages good clients to inflate their traffic so as to crowd out attack traffic.
+
+
+%  For example, 
+% Kargl et al.~\cite{kargl2001protecting} propose using class-based queuing and traffic monitoring to protect web servers from DDoS attacks. 
+% %Jin et al.~\cite{jin2003hop} proposed the hop-count filter to detect and block packets with spoofed source addresses. 
+% Yaar et al.~\cite{yaar2004siff} present a capability-based scheme where attack victims recover by revoking access from detected attackers. 
+% To recover from spoofing attacks, traceback mechanisms (e.g., ~\cite{savage2000practical}, ~\cite{bellovin2003icmp}) have been proposed. 
+% % Vulimiri et al.~\cite{vulimiri2012well}  quantify the protection that congestion pricing affords against DDoS attacks, even for powerful attackers that can control their packets' routes and show that their scheme is provably superior to fair queuing in attack resilience. 
+% Mahajan et al.~\cite{mahajan2002controlling} propose mechanisms for detecting and controlling high bandwidth aggregates
+% %Their design involves both local mechanisms for detecting and controlling an aggregate 
+% at a single router, and a cooperative pushback
+% mechanism in which a router can ask upstream routers to control an aggregate. 
+% % \delete{
+% % Another approach in the in-network filtering line of work is the scheme introduced by Max-min fair throttling~\cite{yau2005defending} in which the basic idea is to install a router throttle at selected upstream routers that allow routers to proactively regulate packet rates to moderate levels.
+% % }
+% % Other techniques such as using authentication inside the network will also help defend against DDoS attacks e.g., IPSec~\cite{kent1998security}. For instance, Gouda et al.~\cite{gouda2002hop} propose a framework for providing hop integrity in computer networks. 
+% Our work provides insights on the requirements of attack mitigation solutions for network-based attacks in the cloud.
+
+
+
+%http://research.zscaler.com/2012/01/popularity-of-exploit-kits-leading-to.html
+%http://cseweb.ucsd.edu/~klevchen/pkvls-imc12.pdf
+%http://cseweb.ucsd.edu/~klevchen/lpcefghkklmwpvs-oakland11.pdf
+%http://cseweb.ucsd.edu/~klevchen/kcmgwmlvs-cset11.pdf
+%http://cseweb.ucsd.edu/~klevchen/gbccdlmmnpprrrtpsv-ccs12.pdf
+%http://technet.microsoft.com/en-us/library/cc959354.aspx
+%http://www.networkcomputing.com/security/ddos-attacks-getting-bigger-report-finds/240159255
+%http://cseweb.ucsd.edu/~savage/papers/CCS12Exploit.pdf
+%http://twimgs.com/darkreading/cloudsecurity/S6870413_DR_Cybercriminals.pdf
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "cloudcops"
+%%% End: 

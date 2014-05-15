@@ -22,7 +22,7 @@
 \nimbus can be deployed as either an in-band or an out-of-band
 solution. The in-band solution requires faster scale-out to avoid affecting the data path and to ensure packet forwarding at line speed.
 However, our prototype investigate the outband solution to avoid taking resources from the critical infrastructure (e.g., switches, software load balancers). 
-As shown in Figure ~\ref{scope}, it requires the extra overhead of duplicating (e.g., port mirroring) the traffic to the detection and mitigation service. Further, as part of mitigation, \nimbus can also hijack a portion of traffic for scrubbing and send traffic back to network after dropping all attack traffic.
+As shown in Figure ~\ref{fig:scope}, it requires the extra overhead of duplicating (e.g., port mirroring) the traffic to the detection and mitigation service. Further, as part of mitigation, \nimbus can also hijack a portion of traffic for scrubbing and send traffic back to network after dropping all attack traffic.
 
 %\nimbus can be used for both inbound and outbound attacks. \minlan{anything more to say?}
 
