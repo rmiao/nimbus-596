@@ -1,0 +1,131 @@
+%\documentclass[letterpaper,twocolumn,10pt]{article}
+%\documentclass{sigcomm}
+\documentclass{sig-alternate-10pt}
+%\documentclass{sig-alternate}
+
+\usepackage{epsfig,endnotes,color,url,paralist, multirow,appendix, graphicx, array}
+%\setkeys{Gin}{draft}
+\usepackage[lofdepth,lotdepth, farskip=-25pt]{subfig}
+\captionsetup[subfloat]{captionskip=-15pt}
+\usepackage{float}
+%\usepackage{usenix}
+\usepackage{times}
+\usepackage{xspace}
+\usepackage[usenames,dvipsnames,table]{xcolor}
+\usepackage{epstopdf}
+%\usepackage{citesort}
+%\usepackage{etoolbox}
+%\patchcmd{\quote}{\rightmargin}{\leftmargin 1em \rightmargin}{}{}
+%\newcommand{\simplequote}[1]{\\\noindent{\it``{#1}''}\linebreak[3]}
+
+%%%%%%%%%%%%%%%% Checkmark and Crossmark that match %%%%%%%%%%%%%%%%
+\usepackage{pifont}% http://ctan.org/pkg/pifont
+\usepackage{amssymb}
+\newcommand{\cmark}{\ding{51}}%
+\newcommand{\xmark}{\ding{55}}%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{find}[theorem]{Finding}
+
+\newcommand{\paraspace}{\vspace{0.05in}}
+\newcommand{\parab}[1]{\paraspace\noindent\textbf{#1} }
+\newcommand{\parae}[1]{\paraspace\noindent\emph{#1} }
+\newcommand{\parabe}[1]{\paraspace\noindent\textbf\emph{#1} }
+\newcommand{\minlan}[1]{{\color{red}[Minlan: #1]}}
+\newcommand{\ramesh}[1]{{\color{red}[Ramesh: #1]}}
+\newcommand{\rahul}[1]{{\color{red}[Rahul: #1]}}
+\newcommand{\Rui}[1]{{\color{blue}[Rui: #1]}}
+\newcommand{\navendu}[1]{{\color{blue}[Navendu: #1]}}
+\newcommand{\nimbus}{\textsc{nimbus}\xspace}
+\newcommand{\delete}[1]{}
+% \setlength{\abovecaptionskip}{-0.07in}
+% \setlength{\belowcaptionskip}{0in}
+% \addtolength{\subfigcapskip}{-25pt}
+% \addtolength{\subfigbottomskip}{-50pt}
+% \addtolength{\subfigtopskip}{-25pt}
+% \addtolength{\subfigcapmargin}{-25pt}
+% \addtolength{\subfigcaptopadj }{-25pt}
+
+
+\newenvironment{encompact}%
+{\begin{itemize}%
+\setlength{\itemsep}{0pt}%
+\setlength{\topsep}{0pt}%
+\setlength{\partopsep}{0pt}%
+\setlength{\parskip}{0pt}}%
+{\end{itemize}}
+\setlength{\leftmargini}{9pt}%
+
+ 
+
+
+
+\begin{document}
+
+
+
+\newcommand{\supsym}[1]{\raisebox{4pt}{{\footnotesize #1}}}
+\newcommand{\purdue}{\supsym{$\ddag$}}
+\newcommand{\msr}{\supsym{$\dag$}}
+\newcommand{\usc}{\supsym{$\ast$}}
+
+\twocolumn[%
+ \centerline{\Large \bf NIMBUS: Cloud-scale Attack Detection and Mitigation} 
+%
+ \medskip
+%
+ \centerline{ 
+ Rui Miao\usc \hspace{5mm} 
+  Weichen Zhao\usc \hspace{5mm} 
+    %Rahul Potharaju\purdue \hspace{5mm}
+ Minlan Yu\usc \hspace{5mm}
+ %Navendu Jain\msr 
+ }
+%\medskip
+\centerline{ \usc~University of Southern California  \hspace{6mm}
+   % \purdue~Purdue University \hspace{6mm}
+    %\msr~Microsoft Research 
+     }
+          
+ \bigskip
+ ]
+
+%\title{\vspace{-20pt} \Large \bf The Dark Menace: Characterizing Network-based Attacks in the Cloud\vspace{-20pt}}
+%%\title{Illuminating the Dark Cloud: \\Characterizing Network-based Attacks in the Cloud}
+
+
+
+%\author{
+%%Paper \#68, 14 pages
+%  Rui Miao\usc \hspace{5mm} 
+%   Rahul Potharaju\purdue \hspace{5mm}
+% Navendu Jain\msr \hspace{5mm}
+% Minlan Yu\usc 
+%  \\
+%   	\usc~University of Southern California  \hspace{6mm}
+%      \purdue~Purdue University \hspace{6mm}
+%    \msr~Microsoft Research 
+%} 
+%  
+%\maketitle
+
+\input{intro} 
+%\input{overview}
+%\input{traffic}
+%\input{characteristics}
+%\input{source}
+%\input{correlation}
+%\input{validation}
+%\input{implication}
+%\input{related}
+%\input{discussion}
+%\input{conclusion}
+
+%\newpage
+{\bibliographystyle{abbrv}
+\bibliography{reference}}
+
+\end{document}

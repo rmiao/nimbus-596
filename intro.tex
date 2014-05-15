@@ -1,0 +1,245 @@
+%!TEX root = cloudcops.tex
+\begin{abstract}
+  As the cloud becomes the de-facto platform to deliver online
+  services, it is becoming both an attractive target for attackers to
+  disrupt hosted services, steal data, and compromise 
+  resources to launch attacks on external targets.
+  %Yet, very little is known about the prevalence of network-based
+  %attacks from and towards cloud infrastructures. 
+  In this paper, using three months
+  of NetFlow data from a major cloud provider, we present the first
+  large-scale characterization of attacks {\em inbound} and {\em outbound} the
+  cloud.  We investigate ten types of attacks ranging from network-level DDoS attacks to application-level spam. Our results highlight the complexity, intensity, duration, and distribution of these
+  attacks. Our results shed light on the key challenges and solutions for future attack prevention systems in the cloud.
+%  Experience with the cloud provider suggests that existing
+% defenses are not comprehensive and don't scale to the traffic
+% volumes seen in our dataset. From our observation, we provide 
+%implications and suggestions on attack detection and mitigation
+%at cloud scale.
+\end{abstract}
+
+\section{Introduction}
+% This paper presents a large-scale field study to characterize
+% network-based attacks targeting the cloud
+% as well as originating from hosted services/VMs under adversarial
+% control.
+Cloud services are growing rapidly and their market is expected to reach \$180 billion by 2015~\cite{Gartner}.
+%
+%Unfortunately, the cloud infrastructure and its hosted
+%services are increasingly becoming an important
+%target for attacks
+Today, large cloud providers host tens of 
+thousands of different services, so {\em inbound} attacks targeting the cloud can cause significant, and sometimes spectacular, collateral damage.
+A recent survey of datacenter operators indicates that half of them
+experienced DDoS attacks, with 94\% of those experiencing regular
+attacks~\cite{arborworldwideinfrasecurityreport}. 
+%\minlan{cite some arbor report about data center contribute a significant amount of the attacks in the Internet}
+Moreover, attackers can abuse hosted services or compromised VMs in the
+cloud to launch \emph{outbound} attacks
+%in addition to hosting
+%malware~\cite{googlesecurityreport,mysqlattack}, stealing confidential
+%data~\cite{sonyattack}, 
+%disrupting a competitor's service~\cite{darkreading}, and selling
+%compromised VMs in the underground
+%economy~\cite{caballero2011measuring,stone2011underground}.
+%It has been reported that attackers have used cloud VMs 
+e.g., to deploy
+botnets~\cite{googlesecurityreport}, exploit kits to detect
+vulnerabilities~\cite{grier12manufacturing}, send
+spam~\cite{kanich11show,tasterchoice}, or launch DoS attacks to other
+sites~\cite{booth13cloud}.
+In April 2011, an attack on the Sony Playstation network compromising
+more than 100 million customer accounts was carried out by a malicious
+service hosted on Amazon EC2~\cite{sonyattack}.
+
+While there have been some reports of individual attacks on enterprise and cloud networks~\cite{googlesecurityreport,Prolexic}, to the best of our knowledge, there have not been any systematic measurement studies of the types of attacks {\em on} and {\em off} the cloud, to guide the attack detection and mitigation system design. In fact, little is know about the prevalence, diversity, frequency, characteristics and correlation of these cloud-related attacks and their evolution over time. 
+
+% that analyze the ``big picture'' of
+%  network-based attacks} in the cloud or \emph{that focus on outgoing
+%  attacks from the cloud}, and \emph{what this implies for the design
+%  of attack detection and mitigation systems at cloud scale}.
+%For example, we lack an understanding of the prevalence of attacks,
+%their intensity and frequency, and their correlation properties as
+%well as their evolution over time.
+%
+
+In this paper, we investigate over 200 TB of NetFlow records collected from
+dozens of edge routers spread across multiple geographically distributed data
+centers of a large cloud provider.  We introduce four main techniques to
+characterize network-based attacks from the NetFlow data, including traffic
+volume-based, spread-based, signature-based, and communication pattern-based
+approaches. Using these approaches, we identified ten different types of
+attacks, ranging from network-level DDoS attacks to application-level spam.
+Due to sampling in the NetFlow data and the fact that NetFlow lacks
+application-level information, we may not be able to identify all the attacks
+in the cloud e.g., HTTP Slowloris~\cite{cambiaso2012taxonomy}. 
+Instead, we take a conservative approach to
+identify those anomalies that exhibit four distinct features: (1) significant
+traffic volume (bps, pps), (2) abnormal fan-in or fan-out (number of connections), (3)
+abnormal packet header signatures (e.g., TCP flags), and (4) initiating communications with Internet malicious hosts (TDS~\cite{tds}).
+%We verify most of the attacks we identified with are verified by  
+%We use several detection tools, including automated analysis of incidence reports, 
+%a commercial DDoS-protection appliance specialized hardware anomaly detector, and a collection of honeypots.
+All our detected attacks are real attacks as validated by inbound attack alerts reported by 
+commercial DDoS-protection appliances and outbound attack incident reports written by operators. 
+We do miss some of the attacks identified by these alerts and reports due to the low sampling rate of NetFlow logs, our conservative approach in attack identification, and the inability to identify application-level attacks without network-level signatures.
+%We have validated 67.6\% of the inbound attacks based on alerts reported by 
+%commercial DDoS-protection appliances and 100\% of outbound attacks based on incident reports written by operators.
+
+To provide an in-depth understanding of the identified attacks, we study the
+key properties of the attacks including their prevalence and evolution over
+time and the key traffic patterns of these attacks such as attack volume,
+intensity, and inter-arrival time.  Moreover, we investigate the impact of
+these attacks on cloud services, their origins/targets in the Internet, and
+those simultaneous attacks.
+
+%For inbound attacks, we study the network services that are affected and the origins of these attacks in the Internet. For outbound attacks, we study the amount of compromised services and the attack targets in the Internet. 
+%we design a methodology to estimate
+%attack properties for a wide variety of attacks both on the infrastructure
+%and services.
+%We develop an attack taxonomy to identify volumetric attacks (e.g., TCP
+%SYN flood, UDP bandwidth floods, DNS reflection), brute-force attacks
+%(e.g., on RDP, SSH and VNC sessions), spread-based attacks on specific
+%identifiers in five-tuple defined flows (e.g., spam, SQL server
+%vulnerabilities), and communication-based attacks (e.g., sending or
+%receiving traffic from Traffic Distribution Systems~\cite{tds}).
+
+%In this paper, we fill this void and make two important contributions:
+%(1) an extensive characterization of network-based 
+%attacks on the cloud infrastructure and
+%services, and 
+%(2) the design of an agile, resilient, and programmable 
+%yet flexible service for detecting and mitigating these attacks.
+
+%Specifically, there are several questions we need to understand:
+%(1) What is the diversity of the attacks? What are their prevalence and the evolution over time?
+
+%(2) What are their traffic patterns e.g., traffic volume, peak intensity, and port/protocol popularity?
+
+%(3) How long do they last and repeat? How fast do they ramp-up?
+
+%(4) Where do they originate from and what services do they target on?
+
+%(5) How do multiple attacks correlated?
+
+
+
+%While not all of these attacks are new, we show a strong evidence of
+%increasing scale, attack volume and sophistication of these attacks.
+
+We make the following major observations about the attacks in our cloud,  
+%on building attack prevention systems, 
+which also shed light on the key challenges in building cloud-scale attack detection and prevention systems. 
+
+\begin{encompact}
+\item We identified ten types of attacks for both inbound and outbound attacks (Table~\ref{tab:attacks}). As expected, DDoS attacks constitute a large fraction. However, there are also a significant amount of brute-force attacks (e.g., guessing password with SSH, RDP and VNC), port scans, communications with malicious hosts in the Internet (e.g., TDS), and application-level attacks (e.g., exploiting SQL vulnerabilities). These attacks are often not detected by cloud security appliances (e.g., DDoS prevention services~\cite{arborworldwideinfrasecurityreport, Prolexic}) and thus need more attention from cloud operators to safeguard their infrastructure and the hosted tenants. 
+
+%DDoS attacks (SYN flood, UDP flood, etc.) are still the dominant types of the attacks (XX\% for the inbound, and XX\% for the outbound). In addition, port scan is also a popular inbound attack. In particular, there are 30.6\% of inbound attacks coming from Botnets from the Internet.
+
+%\item 
+%We provide the evidence of showing the cloud is under around 100 attacks both for inbound and outbound at any given time. \Rui{Our study presents a diverse range of threats and the oversight of existing mitigation practice.} We also show around xx\% of VIPs are generating or receiving 100 attacks during one day.
+
+\item The number of attacks per day is relatively stable except the changes in inbound flood attacks and outbound spam attacks, indicating that the problem of network-based 
+attacks in the cloud is prevalent. 
+%Our cloud experiences a median of 70 inbound and 125 outbound concurrent attacks per minute. 
+The aggregate throughput of inbound attacks has a peak of 43.7 Gbps.
+The attack prevention systems should be scalable to handle both the large number as well as the high-volume of attacks while dynamically adapting their resource usage based on the attack patterns.
+
+%Our cloud experiences a median of 70 inbound and 125 outbound concurrent attacks per minute, and at least 5 types of concurrent attacks per minute.
+%
+%The number of both inbound and outbound attacks are stable over days. Most in- bound attack changes come from TCP SYN and UDP flood attacks. We also observe an outbound spam burst from many VIPs.
+%
+%Amongallthe(VIP,day) pairs under inbound/outbound attacks, 98%/95% experience occasional attacks (<10 attacks/day) and 2%/5% experi- ence frequent attacks (�10 attacks/day). Those VIPs with occasional attacks have more TDS, port scan, brute force, and spam attacks; those with frequent attacks are often un- der flood attacks.
+
+\item Most types of attacks (except DNS reflection) have short durations within 10 minutes, inter-arrival times of hundreds of minutes. DDoS attacks often have higher throughput (10K-100K sampled pkts/min) than other attacks, and have a quick ramp-up time of 2-3 minutes. Such attack intensity requires fast and accurate attack detection and prevention for a wide variety of types of attacks. 
+
+%Most types of attacks (except DNS) have short durations within 10 minutes. At the 99th percentile, attacks can last for hours or days. Outbound flood and spam attacks have very short median durations.
+%
+%Most types of attacks have the median inter-arrival time as hundreds of minutes. Outbound SYN and UDP attacks have smaller inter-arrival times than inbound attacks.
+%
+%DDoS attacks (flood and DNS reflection attacks) have higher throughput than other attacks and higher inbound throughput than outbound. UDP flood attacks have a strong correlation between peak sizes and inter-arrival times.
+%
+%other attacks and higher inbound throughput than outbound. UDP flood attacks have a strong correlation between peak sizes and inter-arrival times.
+
+%\item  \minlan{merge these better}
+%Specifically, we find that cloud infrastructures must be able to scale
+%to handle over 100Gbps of attack traffic in the worst case, and that
+%outbound attacks often match inbound attacks in intensity and
+%prevalence, but the two directions are qualitatively different in the
+%types of attacks seen.
+% Moreover, attack throughputs vary by 3-4 orders of magnitude, median
+%attack ramp-up time in the outbound direction is a minute, and
+%outbound attacks also have smaller inter-arrival times than inbound
+%attacks.
+%Compared with inbound attacks, outbound attacks have smaller interarrival times and 50\% of outbound attacks ramp up within one minute.
+%\item  From identifying and correlating multiple attack characteristics, we found that xx\% of volume-based attacks have a transient, bursty nature -- short duration, but short inter-arrival times, and short ramp-up rates, indicating high requirements on fast attack detection and mitigation within minutes to protect the infrastructure. 
+%\minlan{fix numbers}
+
+
+%\item While existing DDoS mitigation services (e.g. Abor~\cite{Abor},Prolexic~\cite{Prolexic}) are mainly focusing on well-known high volume DDoS attacks (e.g. TCP-SYN, UDP), our study provides the first strong evidence of prevalence of 10 types of cloud attacks by developing four novel detection techniques (i.e. volumetric-based, signature-based, spread-based, and communication-pattern-based). While not all of these attacks are new, we show a strong evidence of increasing scale, attack volume and sophistication of these attacks.
+
+%\item We provide first study to show the evidence of prevalence and characteristics of outbound attacks from cloud. While  existing ticket report system indicates 41.74\% of the incidents are SPAM, our study provides the evidence to show the outbound attacks are dominated by flood attacks (SYN flood 17.6\%, UDP flood 18.7\%, etc.), TDS (21.3\%) and brute force attacks (19.5\%). 
+
+
+%On the other hand, lots of small volume attacks have relatively longer duration, which requires high detection accuracy to prevent the small-scale attack from long-term impact.
+
+%\item We find simultaneous  attacks of different types to or from a single VIP, which is an evidence that attackers start to use more advanced and mixed attacks both towards and out of the cloud. \minlan{give an example}
+
+
+\item We identified the top 10 ASes for inbound and outbound attacks respectively. Most of them 
+originate from hosts located in Europe and Asia. Some attacks (especially TCP SYN flood) have IPs evenly distributed in the IP space. 
+%, except for ICMP, spam and port scan, and SQL. 
+We also observe inbound attacks from data centers and mobile networks, and outbound attacks leveraging DNS servers within a major ISP.
+
+%We also observe that six out of the top 10 ASes that generated the inbound attacks are from Asia which may due to the fast technical expansion and the shortage of management in these regions. We find  a single Brute-Force attack against on 66 VIPs simultaneously, indicating 
+%network-wide vulnerability exploration.
+
+\item  We identified the majority of inbound attack sources and outbound attack targets as coming from DSL, optical fiber, and wireless connections. In particular, 2.1\% inbound attack sources and 0.9\% outbound attack targets use wireless connections, likely indicating the spread of malicious mobile apps. 
+%\Rui{add number to show outbound attacks against wireless cellular network}
+
+%\item We found inbound TCP-SYN attack is mostly using spoofed IP addresses, while inbound SPAM and PortScan are from a relatively small number of sources.
+
+\item There are simultaneous attacks of the same type on multiple VIPs, likely controlled by the same attacker. 
+%In particular, inbound brute forces attacks are simultaneously launched on 53 VIPs. Outbound brute force attacks are simultaneously launched on 20 VIPs.
+%There are also multiple types of attacks simultaneously launched on a single VIP. 
+Multiple DDoS attacks are launched concurrently on the same VIP. Brute-force attacks are often combined with TCP SYN and ICMP attacks on the same VIP. There also exist concurrent inbound and outbound attacks.
+\end{encompact}
+
+
+
+%Same type of attack will launch simultaneously on up to around 10 VIPs, expect for Brute-Force happening on up to 66 VIPs and outbound SPAM happening on up to 30 VIPs simultaneously, indicating either horizontal vulnerability searching or spamming. Further, we found up to five different types of attacks generated to or from single VIP simultaneously, indicating malicious actor leverages multiple methods or techniques for the hope of pass the firewall or detection system.
+
+
+
+%(4) We found inbound TCP-SYN attack is mostly using spoofed IP addresses. Further, inbound SPAM attack originates from a relatively small number of source IP addresses and 40\% of PortScan source addresses come from 5.135.0.0/16. 
+%From the attack source geolocation, we found high attack intensity originated in the eastern United States, Central and Eastern Europe, and in East Asia. We also found the six out of top 10 ASes that generated the inbound attacks are from Asia which may due to the fast technical expansion and the shortage of management in these regions. Moreover, we found 3\% of attack sources are using wireless connection, indicating likely the spread of malicious mobile Apps.
+% volumetric (e.g., TCP SYN flood, UDP bandwidth floods, DNS reflection),
+%signature-based attacks on specific identifiers in five-tuple defined flows (e.g., NULL, Xmas), spread-based attacks over spread range of sources  (e.g., spam, SQL server vulnerabilities), 
+% and communication-based attacks (e.g., sending or receiving traffic from TDS nodes~\cite{tds}). Existing DDoS mitigation services\cite{xx} mainly focus on inbound volumetric attacks that may affect the cloud infrastructure, however, our measurement study quantifies the outbound attacks that may affect external sites and shows other attack types that may affect the individual services hosted in the cloud. Among them, the inbound attacks are dominated by TDS (30.6\%), followed by port scan (14.2\%), brute force (10.3\%) and the flood attacks. The outbound attacks are dominated by flood attacks (SYN flood 17.6\%, UDP flood 18.7\%, etc.), TDS (21.3\%) and brute force attacks (19.5\%).  
+
+
+
+ %We show that some attacks share common ports, which can be used for blacklisting. However, blacklisting is not effective for blocking source IPs because the majority source IPs of attacks are evenly distributed across the address space (except spam) indicating widespread spoofing and use of
+% proxies.  
+
+
+
+% We have validated  67.6\% of inbound and 100\% of outbound attacks with incident reports and hardware anomaly alerts.
+% While not all of these attacks are new, we show a strong evidence of increasing scale, attack volume and sophistication of these attacks. 
+
+
+% What are their traffic patterns e.g., traffic volume, 
+% peak intensity, and port/protocol popularity?
+% How long do they last?
+% Where do they originate from or do they use proxies or spoofing? 
+% %Do they exhaust resources at server, firewalls or load balancers?
+% Answering these key questions will help guide cloud operators and researchers to 
+% develop effective mechanisms for (a) attack detection and mitigation,
+% (b)  operational improvements to avoid recurrences, and
+% (c) ensuring security certification and compliance 
+
+
+%%% Local Variables: 
+%%% mode: latex
+%%% TeX-master: "cloudcops"
+%%% End: 
