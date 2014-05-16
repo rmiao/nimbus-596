@@ -1,4 +1,4 @@
-\section{evaluate}
+\section{Implementation and Evaluation.}
 \subsection{Implementation.}
 In this section, we describe the implementation of NIMBUS following the structure in design section.
 
@@ -18,20 +18,40 @@ We use ovs-controller to control the traffic.
 \parae{Hardware setup.}
 The prototype has two servers and one switch interconnected by 10 Gbps links. We use a Dell PowerEdge R815 machine (32 cores and 32GB memory) acting as the traffic generator, and another Dell PowerEdge R815 machine (48 cores and 32GB memory) as the traffic receiver, each with one 10GE NIC connecting to the 10GE physical switch. We install Ubuntu Server 12.04 as hypervisor on the receiver machine that hosts VMs. Each VM has 1 core and 256 MB memory, and runs the slim Linux.
 
+
+\begin{figure}[t!]
+ \centering
+\includegraphics[width=\linewidth]{figs/instantiation.pdf}
+\vspace{-0.32in}
+\caption{\small Breakdown of VM instantiation time.}
+\vspace{-0.0in}
+\label{fig:break}
+\end{figure}
+
+
+
+
+\begin{figure}[t!]
+ \centering
+\includegraphics[width=\linewidth]{figs/CPU.pdf}
+\vspace{-0.32in}
+\caption{\small CPU Overhead.}
+\vspace{-0.0in}
+\label{fig:overhead}
+\end{figure}
+
 \parae{Profiling VM instantiation}
 To have a better understanding of the factors that influence the instantiation time, we analysed the code of virtualization platform. We get the breakdown of instantiation time for the first VMSentry via the clock\_gettime() function, and record them using the printf() function.
 
-\begin{figure}[H]
-\includegraphics[width=0.4\textwidth]{figs/instantiation.png}
-\caption{breakdown of VM instantiation time.}
-\end{figure}
+The result in Figure ~\ref{fig:break} shows that, instantiating a new VM from scratch can be done within 300 ms. And the main part of instantiation time are network setup and loading snapshot. 
 
-The result in figure 1 shows that, instantiating a new VM from scratch can be done within 300 ms. And the main part of instantiation time are network setup and loading snapshot.
 
 \parae{CPU Overhead}
+For this part, we use the traffic generator to send UDP packet to the receiver. We tested two different settings, the first one is using one percent sample rate at Open VSwitch, and the other one is using five percent sample rate. As shown in the Figure ~\ref{fig:overhead}, the CPU utilization is approximately proportional to sampled traffic. The performance of VM is limited by the emulated network driver. There is much more room to improve the VM performance with para-virtualized drivers enabled.
 
 
-\begin{figure}[H]
-\includegraphics[width=0.4\textwidth]{figs/CPU.png}
-\caption{CPU Overhead.}
-\end{figure}
+
+
+
+
+
